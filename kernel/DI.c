@@ -519,17 +519,19 @@ void DIUpdateRegisters( void )
 						dbgprintf("DIP:DVDAudioStatus(0x00) Streaming=%d StreamCurrent=0x%08X\r\n", Streaming, StreamCurrent);
 						break;
 					case 0x01:	// What is the current address?
+					{
+						u32 currentAddr = 0;
 						if(Streaming)
 						{
 							if(StreamCurrent)
-								write32( DI_IMM, ALIGN_BACKWARD(StreamCurrent, 0x8000) >> 2 );
+								currentAddr = ALIGN_BACKWARD(StreamCurrent, 0x8000) >> 2;
 							else
-								write32( DI_IMM, StreamEndOffset >> 2 );
+								currentAddr = StreamEndOffset >> 2;
 						}
-						else
-							write32( DI_IMM, 0 );
-						dbgprintf("DIP:DVDAudioStatus(0x01) Current=0x%08X\r\n", read32(DI_IMM));
+						write32( DI_IMM, currentAddr );
+						dbgprintf("DIP:DVDAudioStatus(0x01) Current=0x%08X\r\n", currentAddr);
 						break;
+					}
 					case 0x02:	// disc offset of file
 						write32( DI_IMM, StreamStart >> 2 );
 						dbgprintf("DIP:DVDAudioStatus(0x02) StreamStart=0x%08X\r\n", StreamStart);
