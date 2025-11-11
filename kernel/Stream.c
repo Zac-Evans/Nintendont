@@ -207,7 +207,8 @@ void StreamStartStream(u32 CurrentStart, u32 CurrentSize)
 		write32(UPDATE_STREAM, 0); //clear status
 		write32(STREAMING, 1); //set stream flag
 		sync_after_write((void*)STREAMING, 0x60);
-		//dbgprintf("Streaming %08x %08x\n", StreamStart, StreamSize);
+		dbgprintf("Stream:Started Start=0x%08X Size=0x%08X EndOffset=0x%08X ChunkSize=0x%08X\r\n", 
+			StreamStart, StreamSize, StreamEndOffset, StreamGetChunkSize());
 		StreamLoop = 1;
 		StreamEnd = 0;
 	}

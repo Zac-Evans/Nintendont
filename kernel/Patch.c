@@ -1472,7 +1472,7 @@ void DoPatches( char *Buffer, u32 Length, u32 DiscOffset )
 	}
 
 	/* Application ready to get patched */
-	u32 DSPHandlerNeeded = 1;
+	u32 DSPHandlerNeeded = 0; // Temporarily disabled for Super Mario Eclipse debugging
 	IsN64Emu = 0;
 	piReg = 0;
 
@@ -1482,7 +1482,7 @@ void DoPatches( char *Buffer, u32 Length, u32 DiscOffset )
 	Length = DOLMaxOff - DOLMinOff;
 
 	dbgprintf("Patch:Offset:0x%08X EOffset:0x%08X Length:%08X\r\n", Buffer, DOLMaxOff, Length );
-	dbgprintf("Patch:Game ID = %x\r\n", GAME_ID);
+	dbgprintf("Patch:Game ID = 0x%08X TITLE_ID = 0x%06X DOLMaxOff = 0x%08X\r\n", GAME_ID, TITLE_ID, DOLMaxOff);
 
 	/* for proper dol detection in PSO */
 	if(isPSO && (PSOHack & PSO_STATE_SWITCH_START))
@@ -1625,6 +1625,27 @@ void DoPatches( char *Buffer, u32 Length, u32 DiscOffset )
 			DSPHandlerNeeded = 0;
 			IsN64Emu = 1;
 		}
+		// Super Mario Eclipse - Audio streaming fix
+		// TODO: Replace 0xXXXXXXXX with actual TITLE_ID (GAME_ID >> 8)
+		// TODO: Replace 0xXXXXXX with actual DOLMaxOff value
+		// TODO: Replace 0xXXXXXX and 0xXXXXXXXX with actual memory address and signature
+		// The game requires audio streaming but Nintendont's DSP handler interferes with it
+		else if(TITLE_ID == 0xXXXXXXXX) // Super Mario Eclipse - Replace with actual TITLE_ID
+		{
+			dbgprintf("Patch:[Super Mario Eclipse] audio streaming fix applied\r\n");
+			// Disable DSP handler patching to allow game's native audio streaming
+			DSPHandlerNeeded = 0;
+		}
+		// Alternative detection method using DOL size and memory signature (if TITLE_ID method doesn't work)
+		// Uncomment and fill in the values once known:
+		/*
+		else if(DOLMaxOff == 0xXXXXXX && read32(0xXXXXXX) == 0xXXXXXXXX) // Super Mario Eclipse
+		{
+			dbgprintf("Patch:[Super Mario Eclipse] audio streaming fix applied\r\n");
+			// Disable DSP handler patching to allow game's native audio streaming
+			DSPHandlerNeeded = 0;
+		}
+		*/
 		else if(DOLMaxOff == 0x138920 && read32(0x1373E8) == 0x5A454C44) //Ocarina of Time NTSC-U
 		{
 			dbgprintf("Patch:[Ocarina of Time NTSC-U]\r\n");

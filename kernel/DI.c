@@ -487,16 +487,21 @@ void DIUpdateRegisters( void )
 			} break;
 			case 0xE1:	// play Audio Stream
 			{
-				//dbgprintf("DIP:DVDAudioStream(%d)\n", (read32(DI_CMD_0) >> 16 ) & 0xFF );
+				dbgprintf("DIP:DVDAudioStream(%d) Start=0x%08X Size=0x%08X\r\n", 
+					(read32(DI_CMD_0) >> 16) & 0xFF, 
+					read32(DI_CMD_1) << 2, 
+					read32(DI_CMD_2));
 				switch( (read32(DI_CMD_0) >> 16) & 0xFF )
 				{
 					case 0x00:
 						StreamStartStream(read32(DI_CMD_1) << 2, read32(DI_CMD_2));
 						Streaming = 1;
+						dbgprintf("DIP:Audio stream started\r\n");
 						break;
 					case 0x01:
 						StreamEndStream();
 						Streaming = 0;
+						dbgprintf("DIP:Audio stream ended\r\n");
 						break;
 					default:
 						break;
@@ -505,11 +510,13 @@ void DIUpdateRegisters( void )
 			} break;
 			case 0xE2:	// request Audio Status
 			{
-				switch( (read32(DI_CMD_0) >> 16) & 0xFF )
+				u32 statusType = (read32(DI_CMD_0) >> 16) & 0xFF;
+				switch( statusType )
 				{
 					case 0x00:	// Streaming?
 						Streaming = !!(StreamCurrent);
 						write32( DI_IMM, Streaming );
+						dbgprintf("DIP:DVDAudioStatus(0x00) Streaming=%d StreamCurrent=0x%08X\r\n", Streaming, StreamCurrent);
 						break;
 					case 0x01:	// What is the current address?
 						if(Streaming)
@@ -521,17 +528,20 @@ void DIUpdateRegisters( void )
 						}
 						else
 							write32( DI_IMM, 0 );
+						dbgprintf("DIP:DVDAudioStatus(0x01) Current=0x%08X\r\n", read32(DI_IMM));
 						break;
 					case 0x02:	// disc offset of file
 						write32( DI_IMM, StreamStart >> 2 );
+						dbgprintf("DIP:DVDAudioStatus(0x02) StreamStart=0x%08X\r\n", StreamStart);
 						break;
 					case 0x03:	// Size of file
 						write32( DI_IMM, StreamSize );
+						dbgprintf("DIP:DVDAudioStatus(0x03) StreamSize=0x%08X\r\n", StreamSize);
 						break;
 					default:
+						dbgprintf("DIP:DVDAudioStatus(0x%02X) unknown\r\n", statusType);
 						break;
 				}
-				//dbgprintf("DIP:DVDAudioStatus( %d, %08X )\n", (read32(DI_CMD_0) >> 16) & 0xFF, read32(DI_IMM) );
 				DIOK = 2;
 			} break;
 			case 0x12:
